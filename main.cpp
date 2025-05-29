@@ -11,21 +11,31 @@ namespace fs = std::filesystem;
 void get_directory_size(const fs::path& path, std::promise<std::map<fs::path, uintmax_t>> p) {
     uintmax_t size = 0;
     std::map<fs::path, uintmax_t> m;
+
     try {
         if (fs::exists(path) && fs::is_directory(path)) {
-            for (const auto& entry : fs::recursive_directory_iterator(path)) {
-                if (fs::is_regular_file(entry.status())) {
-                    size += fs::file_size(entry);
+            for (fs::recursive_directory_iterator it(path), end; it != end; ++it) {
+                try {
+                    if (it->path().filename() == "researchdev" && fs::is_directory(it->status())) {
+                        it.disable_recursion_pending(); // Skip entire "researchdev" dir
+                        continue;
+                    }
+
+                    if (fs::is_regular_file(it->status())) {
+                        size += fs::file_size(it->path());
+                    }
+                } catch (const fs::filesystem_error& e) {
+                    std::cout << "Error accessing " << it->path() << ": " << e.what() << std::endl;
                 }
             }
         }
-    }catch (const fs::filesystem_error& e) {
-        std::cout<<e.what()<<std::endl;
+    } catch (const fs::filesystem_error& e) {
+        std::cout << "Top-level error: " << e.what() << std::endl;
     }
+
     m[path] = size;
     p.set_value(std::move(m));
 }
-
 
 std::string human_readable(uintmax_t size) {
     const char* suffixes[] = {"B", "KB", "MB", "GB", "TB"};
