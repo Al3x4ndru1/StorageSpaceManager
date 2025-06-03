@@ -57,10 +57,13 @@ int main() {
     std::string path = "/home";
 
     for (const auto & entry : fs::directory_iterator(path)) {
-        list.push_back(entry.path());
+
+        if ("docker" != entry.path().filename()) {
+            list.push_back(entry.path());
+        }
     }
 
-    // std::vector<std::thread>;
+    std::vector<std::thread>;
     std::vector<std::future<std::map<fs::path, uintmax_t>>> futures;
     std::vector<std::thread> threads;
     for (auto const & s : list) {
