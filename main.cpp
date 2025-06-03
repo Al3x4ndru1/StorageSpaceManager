@@ -63,7 +63,7 @@ int main() {
         }
     }
 
-    std::vector<std::thread>;
+
     std::vector<std::future<std::map<fs::path, uintmax_t>>> futures;
     std::vector<std::thread> threads;
     for (auto const & s : list) {
